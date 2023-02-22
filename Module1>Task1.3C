@@ -1,0 +1,43 @@
+int motionPin = 2;   // input pin for PIR sensor
+int led = 13;       // pin for the LED
+bool motionState = false;
+
+int moisturePin = 4;   // input pin for soil moisture sensor
+int buzzer = 8;       // pin for the buzzer
+bool moistureState = false;  
+
+void setup()
+{
+  Serial.begin(9600);
+  
+  pinMode(led,OUTPUT);
+  pinMode(buzzer, OUTPUT);
+  
+  pinMode(motionPin, INPUT);
+  pinMode(moisturePin, INPUT);
+  
+  attachInterrupt(digitalPinToInterrupt(motionPin), motion, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(moisturePin), moisture, CHANGE);
+}
+
+void loop()
+{
+  delay(500);
+}
+
+void motion()
+{
+  motionState = !motionState;
+  Serial.println("Motion Detected!");
+  digitalWrite(led, motionState);
+  Serial.println("Interrupted");
+}
+
+void moisture()
+{
+  moistureState = !moistureState;
+  Serial.println("Moisture Value");
+  digitalWrite(led, moistureState);
+  Serial.println("Interrupted");
+}
+
