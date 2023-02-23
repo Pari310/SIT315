@@ -1,43 +1,44 @@
-int motionPin = 2;   // input pin for PIR sensor
-int led = 13;       // pin for the LED
-bool motionState = false;
+int led = 13;                 //pin that the led is atteched to
+const int motionSensor = 2;    //pin that the motion sensor is atteched to
 
-int moisturePin = 4;   // input pin for soil moisture sensor
-int buzzer = 8;       // pin for the buzzer
-bool moistureState = false;  
+const int buzzer = 8;         //pin that the buzzer is atteched to
+const int tiltSensor = 3;     //pin that the tilt sensor is atteched to
 
-void setup()
-{
-  Serial.begin(9600);
-  
-  pinMode(led,OUTPUT);
+uint8_t motionState = LOW;
+uint8_t tiltState = LOW;
+
+void setup() {  
+  // initialize as an output
   pinMode(buzzer, OUTPUT);
+  pinMode(led,OUTPUT);
+  // initialize sensor as an input
+  pinMode(tiltSensor, INPUT_PULLUP);
+  pinMode(motionSensor, INPUT);    
   
-  pinMode(motionPin, INPUT);
-  pinMode(moisturePin, INPUT);
+  Serial.begin(9600);        // initialize serial
   
-  attachInterrupt(digitalPinToInterrupt(motionPin), motion, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(moisturePin), moisture, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(motionSensor), motion, HIGH);
+  attachInterrupt(digitalPinToInterrupt(tiltSensor), tilt, HIGH);
+
 }
 
-void loop()
-{
+void loop(){
+  
   delay(500);
+  
 }
 
-void motion()
-{
+void motion(){
   motionState = !motionState;
-  Serial.println("Motion Detected!");
+  Serial.println("Motion detected!");
   digitalWrite(led, motionState);
-  Serial.println("Interrupted");
+  Serial.println("LED blinked");
+
 }
 
-void moisture()
-{
-  moistureState = !moistureState;
-  Serial.println("Moisture Value");
-  digitalWrite(led, moistureState);
-  Serial.println("Interrupted");
+void tilt(){
+  tiltState = !tiltState;
+  Serial.println("Tilted!");
+  digitalWrite(buzzer, tiltState);
+  Serial.println("BUZZER buzzed"); 
 }
-
