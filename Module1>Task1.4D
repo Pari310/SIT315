@@ -1,0 +1,75 @@
+#include "PinChangeInt.h"
+
+#define PIR 2
+#define PIR2 3
+#define SOIL 11
+
+const int led_pin = PB5;
+
+// Counter and compare
+const uint16_t timer1_load = 0;
+const uint16_t timer1_compare = 31250;
+
+void setup()
+{
+    Serial.begin(9600);
+
+    pinMode(PIR, INPUT);
+    pinMode(PIR2, INPUT);
+    pinMode(SOIL, INPUT);
+
+    // pinMode(LED_BUILTIN, OUTPUT);
+    DDRB |= (1 << led_pin);
+
+    attachInterrupt(digitalPinToInterrupt(PIR), externalInterrupt1, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(PIR2), externalInterrupt2, RISING);
+    PCattachInterrupt(SOIL, externalInterrupt3, CHANGE);
+
+    // reset timer1 control reg A
+    TCCR1A = 0;
+
+    // Clear on compare
+    TCCR1B &= ~(1 << WGM13);
+    TCCR1B |= (1 << WGM12);
+
+    // set prescaler 1024
+    TCCR1B |= (1 << CS12);
+    TCCR1B &= ~(1 << CS11);
+    TCCR1B |= (1 << CS10);
+
+    // reset timer1 set and compare values
+    TCNT1 = timer1_load;
+    OCR1A = timer1_compare;
+
+    // enable timer1 compare interrupt
+    TIMSK1 = (1 << OCIE1A);
+
+    // enable global interrupts
+    sei();
+}
+
+void loop()
+{
+    delay(1000);
+}
+
+ISR(TIMER1_COMPA_vect)
+{
+    PORTB ^= (1 << led_pin);
+    Serial.println("Timer interrupted");
+}
+
+void externalInterrupt1()
+{
+    Serial.println("Interrupt by PIR Motion sensor 1");
+}
+
+void externalInterrupt2()
+{
+    Serial.println("Interrupt by PIR Motion sensor 2");
+}
+
+void externalInterrupt3()
+{
+    Serial.println("Interrupt by Soil Moisture sensor");
+}
