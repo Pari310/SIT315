@@ -1,0 +1,41 @@
+#include <iostream>
+#include <stdlib.h>
+#include <omp.h>
+#include <time.h>
+#include <string>
+using namespace std;
+
+#define NUM_THREADS 8
+#define MAX 1000000
+
+int data[MAX];
+long global_sum = 0;
+
+int main(int argc, char *argv[]) {
+    int cores = omp_get_num_procs();
+    cout << "the number of cores on this machine = " << cores << endl;
+
+    srand(time(NULL));
+    for(int i = 0; i < MAX; i++) {
+        data[i] = rand() % 20;
+    }
+
+    #pragma omp parallel
+    {
+        long tid = omp_get_thread_num();
+        long sum = 0;
+        int range = MAX/NUM_THREADS;
+        int start = tid * range;
+        int end = start + range;
+
+        #pragma omp for
+        for(int i = start ; i < end ; i++) {
+            sum += data[i];
+        }
+
+        #pragma omp atomic
+        global_sum += sum;
+    }
+
+    cout << "the final sum = " << global_sum << endl;
+}
