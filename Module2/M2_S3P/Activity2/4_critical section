@@ -1,0 +1,29 @@
+#include <omp.h>
+#include <stdio.h>
+ 
+int main(int argc, char *argv[]) {
+  int n = 1000000;
+  double sum = 0.0;
+ 
+#pragma omp parallel
+  {
+    int id = omp_get_thread_num();
+    int num_threads = omp_get_num_threads();
+    int chunk_size = n / num_threads;
+ 
+    double partial_sum = 0.0;
+    int start = id * chunk_size;
+    int end = start + chunk_size;
+ 
+    for (int i = start; i < end; i++) {
+      partial_sum += 1.0 / (double)(i + 1);
+    }
+ 
+#pragma omp critical
+    sum += partial_sum;
+  }
+ 
+  printf("sum = %f\n", sum);
+ 
+  return 0;
+}
