@@ -1,0 +1,83 @@
+#include <stdio.h>
+#include <iostream>
+#include <time.h>
+#include <omp.h>
+
+using namespace std;
+
+#define N 1000
+int NUM_THREADS;
+
+int inputArray1[N][N];
+int inputArray2[N][N];
+int outputArray[N][N];
+
+//intialises array with random values
+void intialiseArray(int array[N][N]) {
+	cout<<"intialising array... ";
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < N; j++)
+		{
+			array[i][j] = rand() % ((100 - 1) + 1) + 1;
+		}
+	}
+	cout<<"complete"<<endl;
+}		
+
+//prints array to console
+void printArrays(int array[N][N]){
+	cout <<"[";
+	for (int i = 0; i < N; i++) {
+		cout << "[";
+		for (int j = 0; j < N; j++) {
+			cout << array[i][j];
+			std::cout << " ";
+		}
+		std::cout << "]\n";
+	}
+	std::cout << "]\n\n";
+}		
+
+//performs a threaded matrix multiplication using OpenMP 
+void OpenmpMatrixMultiplication()
+{
+	#pragma omp parallel
+	{
+		//cout<<omp_get_thread_num()<<endl;
+		//int value;
+		#pragma omp for
+		for (int i = 0; i < N; i++)
+		{
+			for (int j = 0; j < N; j++)
+			{	
+				int value = 0;
+				for (int k = 0; k < N; k++)
+				{
+					value += inputArray1[i][k] * inputArray2[k][j];
+				}
+				outputArray[i][j] = value;
+
+			}
+		}
+	}
+}	
+
+int main(int argc, char *argv[]){
+
+	//omp_set_num_threads(NUM_THREADS);
+
+	cout<<"Array size (N x N) is: "<<N<<endl;
+	intialiseArray(inputArray1);
+	intialiseArray(inputArray2);
+
+	cout<<"OpenMP Matrix Multiplication with " << NUM_THREADS << " threads.\tTime elapsed: ";
+
+		int start_s = clock();
+        OpenmpMatrixMultiplication();
+		int stop_s = clock();
+
+		cout << (stop_s - start_s) / double(CLOCKS_PER_SEC) * 1000 << endl;
+
+	return 0;
+}
