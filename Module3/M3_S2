@@ -1,0 +1,178 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <mpi.h>
+
+#define N 4 // Size of matrices
+
+int main(int argc, char* argv[]) {
+    int rank, size;
+    int a[N][N], b[N][N], c[N][N]; // Matrices
+    int local_a[N][N / 2], local_b[N / 2][N], local_c[N / 2][N / 2]; // Local matrices
+    int i, j, k;
+    int local_sum = 0, total_sum = 0;
+
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    if (size != 4) {
+        if (rank == 0) {
+            printf("This program requires exactly 4 processes.\n");
+        }
+        MPI_Finalize();
+        return 1;
+    }
+
+    // Only the root process initializes the matrices
+    if (rank == 0) {
+        // Initialize matrix a
+        for (i = 0; i < N; i++) {
+            for (j = 0; j < N; j++) {
+                a[i][j] = i + j;
+            }
+        }
+
+        // Initialize matrix b
+        for (i = 0; i < N; i++) {
+            for (j = 0; j < N; j++) {
+                b[i][j] = i * j;
+            }
+        }
+    }
+
+    // Scatter matrix a to all processes
+    MPI_Scatter(a, N * N / 2, MPI_INT, local_a, N * N / 2, MPI_INT, 0, MPI_COMM_WORLD);
+
+    // Scatter matrix b to all processes
+    MPI_Scatter(b, N * N / 2, MPI_INT, local_b, N * N / 2, MPI_INT, 0, MPI_COMM_WORLD);
+
+    // Perform local matrix multiplication
+    for (i = 0; i < N / 2; i++) {
+        for (j = 0; j < N / 2; j++) {
+            local_c[i][j] = 0;
+            for (k = 0; k < N; k++) {
+                local_c[i][j] += local_a[i][k] * local_b[k][j];
+            }
+            local_sum += local_c[i][j]; // Calculate the local sum
+        }
+    }
+
+    // Gather the local matrices from all processes
+    MPI_Gather(local_c, N * N / 4, MPI_INT, c, N * N / 4, MPI_INT, 0, MPI_COMM_WORLD);
+
+    // Reduce the local sums to calculate the total sum
+    MPI_Reduce(&local_sum, &total_sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+
+    // Only the root process prints the result
+    if (rank == 0) {
+        printf("Matrix a:\n");
+        for (i = 0; i < N; i++) {
+            for (j = 0; j < N; j++) {
+                printf("%d ", a[i][j]);
+            }
+            printf("\n");
+        }
+
+        printf("\nMatrix b:\n");
+        for (i = 0; i < N; i++) {
+            for (j = 0; j < N; j++) {
+                printf("%d ", b[i][j]);
+            }
+            printf("\n");
+        }
+#include <stdio.h>
+#include <stdlib.h>
+#include <mpi.h>
+
+#define N 4 // Size of matrices
+
+int main(int argc, char* argv[]) {
+    int rank, size;
+    int a[N][N], b[N][N], c[N][N]; // Matrices
+    int local_a[N][N / 2], local_b[N / 2][N], local_c[N / 2][N / 2]; // Local matrices
+    int i, j, k;
+    int local_sum = 0, total_sum = 0;
+
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    if (size != 4) {
+        if (rank == 0) {
+            printf("This program requires exactly 4 processes.\n");
+        }
+        MPI_Finalize();
+        return 1;
+    }
+
+    // Only the root process initializes the matrices
+    if (rank == 0) {
+        // Initialize matrix a
+        for (i = 0; i < N; i++) {
+            for (j = 0; j < N; j++) {
+                a[i][j] = i + j;
+            }
+        }
+
+        // Initialize matrix b
+        for (i = 0; i < N; i++) {
+            for (j = 0; j < N; j++) {
+                b[i][j] = i * j;
+            }
+        }
+    }
+
+    // Scatter matrix a to all processes
+    MPI_Scatter(a, N * N / 2, MPI_INT, local_a, N * N / 2, MPI_INT, 0, MPI_COMM_WORLD);
+
+    // Scatter matrix b to all processes
+    MPI_Scatter(b, N * N / 2, MPI_INT, local_b, N * N / 2, MPI_INT, 0, MPI_COMM_WORLD);
+
+    // Perform local matrix multiplication
+    for (i = 0; i < N / 2; i++) {
+        for (j = 0; j < N / 2; j++) {
+            local_c[i][j] = 0;
+            for (k = 0; k < N; k++) {
+                local_c[i][j] += local_a[i][k] * local_b[k][j];
+            }
+            local_sum += local_c[i][j]; // Calculate the local sum
+        }
+    }
+
+    // Gather the local matrices from all processes
+    MPI_Gather(local_c, N * N / 4, MPI_INT, c, N * N / 4, MPI_INT, 0, MPI_COMM_WORLD);
+
+    // Reduce the local sums to calculate the total sum
+    MPI_Reduce(&local_sum, &total_sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+
+    // Only the root process prints the result
+    if (rank == 0) {
+        printf("Matrix a:\n");
+        for (i = 0; i < N; i++) {
+            for (j = 0; j < N; j++) {
+                printf("%d ", a[i][j]);
+            }
+            printf("\n");
+        }
+
+        printf("\nMatrix b:\n");
+        for (i = 0; i < N; i++) {
+            for (j = 0; j < N; j++) {
+                printf("%d ", b[i][j]);
+            }
+            printf("\n");
+        }
+        
+         printf("\nMatrix c:\n");
+        for (i = 0; i < N; i++) {
+            for (j = 0; j < N; j++) {
+                printf("%d ", c[i][j]);
+            }
+            printf("\n");
+        }
+      }
+      
+      MPI_Finalize();
+      return 0;
+    }
+        
